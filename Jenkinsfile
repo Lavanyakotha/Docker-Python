@@ -10,14 +10,12 @@ pipeline {
     }
     
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
-                script {
-                    clone("https://github.com/Lavanyakotha/Docker-Python.git","Docker-Python")
-                }
+                git url: 'https://github.com/Lavanyakotha/Docker-Python.git'
             }
         }
-        
+               
         stage('Build Docker Images') {
             parallel {
                 stage('Build Main App Image') {
