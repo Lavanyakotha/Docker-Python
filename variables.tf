@@ -7,6 +7,6 @@ variable "instance_type" {
 }
 
 variable "key_name" {
-  description = "Name of your existing EC2 Key Pair"
+  description = "Dockerpythonkeypair"
   type        = string
 }
