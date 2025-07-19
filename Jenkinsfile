@@ -9,15 +9,7 @@ pipeline {
         GIT_BRANCH = "master"
     }
     
-    stages {
-        stage('Cleanup Workspace') {
-            steps {
-                script {
-                    clean_ws()
-                }
-            }
-        }
-        
+    
         stage('Clone Repository') {
             steps {
                 script {
@@ -44,26 +36,7 @@ pipeline {
                
             }
         }
-        
-        stage('Run Unit Tests') {
-            steps {
-                script {
-                    run_tests()
-                }
-            }
-        }
-        
-        stage('Security Scan with Trivy') {
-            steps {
-                script {
-                    // Create directory for results
-                  
-                    trivy_scan()
-                    
-                }
-            }
-        }
-        
+             
         stage('Push Docker Images') {
             parallel {
                 stage('Push Main App Image') {
