@@ -9,7 +9,7 @@ pipeline {
         GIT_BRANCH = "master"
     }
     
-    
+    stages {
         stage('Clone Repository') {
             steps {
                 script {
@@ -69,5 +69,5 @@ pipeline {
                 }
             }
         }
-    
+}
 }
