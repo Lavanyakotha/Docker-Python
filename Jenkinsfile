@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/Lavanyakotha/Docker-Python.git'
+                git url: 'https://github.com/Lavanyakotha/Docker-Python.git', branch: 'main'
             }
         }
                
