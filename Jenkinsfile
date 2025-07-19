@@ -6,7 +6,7 @@ pipeline {
         DOCKER_IMAGE_NAME = 'Lavanyakotha/Docker-Python'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
         GITHUB_CREDENTIALS = credentials('github-credentials')
-        GIT_BRANCH = "master"
+        GIT_BRANCH = "main"
     }
     
     stages {
@@ -15,55 +15,48 @@ pipeline {
                 git url: 'https://github.com/Lavanyakotha/Docker-Python.git', branch: 'main'
             }
         }
-               
-        stage('Build Docker Images') {
-            parallel {
-                stage('Build Main App Image') {
-                    steps {
-                        script {
-                            docker_build(
-                                imageName: env.DOCKER_IMAGE_NAME,
-                                imageTag: env.DOCKER_IMAGE_TAG,
-                                dockerfile: 'Dockerfile',
-                                context: '.'
-                            )
-                        }
-                    }
+         stage('Build Docker Image') {
+            steps {
+                script {
+                    dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}")
                 }
-                
-               
             }
-        }
-             
-        stage('Push Docker Images') {
-            parallel {
-                stage('Push Main App Image') {
-                    steps {
-                        script {
-                            docker_push(
-                                imageName: env.DOCKER_IMAGE_NAME,
-                                imageTag: env.DOCKER_IMAGE_TAG,
-                                credentials: 'docker-hub-credentials'
-                            )
-                        }
+        }     
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                        dockerImage.push()
                     }
                 }
-                
-                
             }
         }
         
-        // Add this new stage
-        stage('Update Kubernetes Manifests') {
+       stage('Update Kubernetes Manifests') {
             steps {
                 script {
-                    update_k8s_manifests(
-                        imageTag: env.DOCKER_IMAGE_TAG,
-                        manifestsPath: 'kubernetes',
-                        gitCredentials: 'github-credentials',
-                        gitUserName: 'Jenkins CI',
-                        gitUserEmail: 'k.lavanya543@gmail.com'
-                    )
+                    withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                        sh '''
+                            # Clean workspace if needed
+                            rm -rf Docker-Python
+
+                            # Clone the Kubernetes manifests repo
+                            git clone https://${GIT_USER}:${GIT_PASS}@github.com/Lavanyakotha/Docker-Python.git Docker-Python
+                            cd Docker-Python
+
+                            # Set Git identity
+                            git config user.name "k.lavanya543@gmail.com"
+                            git config user.email "k.lavanya543@gmail.com"
+
+                            # Update the image tag in the manifest file
+                            sed -i "s|image: .*/your-app:.*|image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}|" kubernetes/deployment.yaml
+
+                            # Commit and push changes
+                            git add kubernetes/deployment.yaml
+                            git commit -m "Update image tag to ${DOCKER_IMAGE_TAG}"
+                            git push origin main
+                        '''
+                    }
                 }
             }
         }
