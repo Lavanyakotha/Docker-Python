@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         // Update the main app image name to match the deployment file
-        DOCKER_IMAGE_NAME = 'Lavanyakotha/Docker-Python'
+        DOCKER_IMAGE_NAME = 'lavanyakotha/docker-python'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
         GITHUB_CREDENTIALS = credentials('github-credentials')
         GIT_BRANCH = "main"
