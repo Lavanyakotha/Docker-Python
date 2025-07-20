@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-python-app
+  labels:
+    app: docker-python
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker-python
+  template:
+    metadata:
+      labels:
+        app: docker-python
+    spec:
+      containers:
+      - name: docker-python
+        image: lavanyakotha/docker-python:latest  # This gets updated by Jenkins
+        ports:
+        - containerPort: 5000
