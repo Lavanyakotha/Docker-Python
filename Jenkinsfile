@@ -35,28 +35,15 @@ pipeline {
        stage('Update Kubernetes Manifests') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-                        sh '''
-                            # Clean workspace if needed
-                            rm -rf Docker-Python
-
-                            # Clone the Kubernetes manifests repo
-                            git clone https://Lavanyakotha:****@github.com/Lavanyakotha/Docker-Python.git
-                            cd Docker-Python
-
-                            # Set Git identity
-                            git config user.name "k.lavanya543@gmail.com"
-                            git config user.email "k.lavanya543@gmail.com"
-
-                            # Update the image tag in the manifest file
-                            sed -i "s|image: .*/your-app:.*|image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}|" kubernetes/deployment.yaml
-
-                            # Commit and push changes
-                            git add kubernetes/deployment.yaml
-                            git diff --quiet || git commit -m "Update image tag to ${DOCKER_IMAGE_TAG}"
-                            git push origin main
-                        '''
-                    }
+                    update_k8s_manifests(
+                        imageTag: env.DOCKER_IMAGE_TAG,
+                        manifestsPath: 'kubernetes',
+                        gitCredentialsId: 'github-credentials',   // ✅ changed
+                        gitUsernameVar: 'GIT_USER',               // ✅ added
+                        gitPasswordVar: 'GIT_PAT',                // ✅ added
+                        gitUserName: 'Jenkins CI',
+                        gitUserEmail: 'k.lavanya543@gmail.com'
+                    )
                 }
             }
         }
