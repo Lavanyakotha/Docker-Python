@@ -53,7 +53,7 @@ pipeline {
 
                             # Commit and push changes
                             git add kubernetes/deployment.yaml
-                            git commit -m "Update image tag to ${DOCKER_IMAGE_TAG}"
+                            git diff --quiet || git commit -m "Update image tag to ${DOCKER_IMAGE_TAG}"
                             git push origin main
                         '''
                     }
