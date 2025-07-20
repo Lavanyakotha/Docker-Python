@@ -2,11 +2,12 @@ pipeline {
     agent any
 
     environment {
-        // Docker image name and tag
         DOCKER_IMAGE_NAME = 'lavanyakotha/docker-python'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
         GITHUB_CREDENTIALS = credentials('github-credentials')
         GIT_BRANCH = "main"
+        EC2_HOST = "54.205.51.22" // Replace with your EC2 public IP
+        EC2_USER = "ec2-user"         // or "ubuntu" for Ubuntu AMIs
     }
 
     stages {
@@ -33,21 +34,18 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy to EC2') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'Docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sshagent(credentials: ['ec2-keypair']) {
-                        sh '''
-                        ssh -o StrictHostKeyChecking=no ec2-user@54.205.51.22 "
-                            docker login -u $DOCKER_USER -p $DOCKER_PASS
-                            docker pull $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+                sshagent (credentials: ['ec2-keypair']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << EOF
+                            docker pull ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
                             docker stop flask-app || true
                             docker rm flask-app || true
-                            docker run -d -p 80:80 --name flask-app $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
-                        "
-                        '''
-                    }
+                            docker run -d -p 80:80 --name flask-app ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+                        EOF
+                    """
                 }
             }
         }
