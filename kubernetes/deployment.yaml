@@ -1,21 +1,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: docker-python-app
+  name: flask-app
   labels:
-    app: docker-python
+    app: flask-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: docker-python
+      app: flask-app
   template:
     metadata:
       labels:
-        app: docker-python
+        app: flask-app
     spec:
       containers:
-      - name: docker-python
-        image: lavanyakotha/docker-python:latest  # This gets updated by Jenkins
+      - name: flask-app
+        image: lavanyakotha/docker-python:latest  # This will be replaced by Jenkins
         ports:
-        - containerPort: 5000
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-service
+spec:
+  selector:
+    app: flask-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
