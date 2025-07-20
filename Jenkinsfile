@@ -34,21 +34,6 @@ pipeline {
             }
         }
 
-        stage('Update Kubernetes Manifests') {
-            steps {
-                script {
-                    // ✅ Update deployment.yaml image tag and apply to Kubernetes
-                    sh """
-                    echo "Updating Kubernetes manifests with image tag: ${DOCKER_IMAGE_TAG}"
-                    sed -i 's|image:.*|image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}|g' kubernetes/deployment.yaml
-                    echo "Updated deployment.yaml:"
-                    cat kubernetes/deployment.yaml
-
-                    echo "Applying manifests to Kubernetes cluster..."
-                    kubectl apply -f kubernetes/
-                    """
-                }
-            }
-        }
+       
     }
 }
