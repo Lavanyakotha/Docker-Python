@@ -1,27 +1,29 @@
 pipeline {
     agent any
-    
+
     environment {
-        // Update the main app image name to match the deployment file
+        // Docker image name and tag
         DOCKER_IMAGE_NAME = 'lavanyakotha/docker-python'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
         GITHUB_CREDENTIALS = credentials('github-credentials')
         GIT_BRANCH = "main"
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/Lavanyakotha/Docker-Python.git', branch: 'main'
+                git url: 'https://github.com/Lavanyakotha/Docker-Python.git', branch: "${GIT_BRANCH}"
             }
         }
-         stage('Build Docker Image') {
+
+        stage('Build Docker Image') {
             steps {
                 script {
                     dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}")
                 }
             }
-        }     
+        }
+
         stage('Push Docker Image') {
             steps {
                 script {
@@ -31,21 +33,22 @@ pipeline {
                 }
             }
         }
-        
-       stage('Update Kubernetes Manifests') {
+
+        stage('Update Kubernetes Manifests') {
             steps {
                 script {
-                    update_k8s_manifests(
-                        imageTag: env.DOCKER_IMAGE_TAG,
-                        manifestsPath: 'kubernetes',
-                        gitCredentialsId: 'github-credentials',   // ✅ changed
-                        gitUsernameVar: 'GIT_USER',               // ✅ added
-                        gitPasswordVar: 'GIT_PAT',                // ✅ added
-                        gitUserName: 'Jenkins CI',
-                        gitUserEmail: 'k.lavanya543@gmail.com'
-                    )
+                    // ✅ Update deployment.yaml image tag and apply to Kubernetes
+                    sh """
+                    echo "Updating Kubernetes manifests with image tag: ${DOCKER_IMAGE_TAG}"
+                    sed -i 's|image:.*|image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}|g' kubernetes/deployment.yaml
+                    echo "Updated deployment.yaml:"
+                    cat kubernetes/deployment.yaml
+
+                    echo "Applying manifests to Kubernetes cluster..."
+                    kubectl apply -f kubernetes/
+                    """
                 }
             }
         }
-}
+    }
 }
