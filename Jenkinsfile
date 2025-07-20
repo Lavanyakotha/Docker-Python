@@ -41,7 +41,7 @@ pipeline {
                             rm -rf Docker-Python
 
                             # Clone the Kubernetes manifests repo
-                            git clone https://${GIT_USER}:${GIT_PASS}@github.com/Lavanyakotha/Docker-Python.git Docker-Python
+                            git clone https://Lavanyakotha:****@github.com/Lavanyakotha/Docker-Python.git
                             cd Docker-Python
 
                             # Set Git identity
