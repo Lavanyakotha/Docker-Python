@@ -39,12 +39,12 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'Docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sshagent(credentials: ['ec2-keypair']) {
                         sh '''
-                        ssh -o StrictHostKeyChecking=no ec2-user@<EC2_PUBLIC_IP> "
-                            docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
-                            docker pull ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+                        ssh -o StrictHostKeyChecking=no ec2-user@54.205.51.22 "
+                            docker login -u $DOCKER_USER -p $DOCKER_PASS
+                            docker pull $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
                             docker stop flask-app || true
                             docker rm flask-app || true
-                            docker run -d -p 80:80 --name flask-app ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+                            docker run -d -p 80:80 --name flask-app $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
                         "
                         '''
                     }
